@@ -1,0 +1,86 @@
+# =========================================================================
+# Decorrelated Attribution Generation Experiment Configuration
+# =========================================================================
+
+# --- 1. Path Configuration ---
+paths:
+  # Root directory for decorrelated training weights (contains 8 independent models)
+  decorr_weights_root: "<PATH_TO_DECORR_WEIGHTS>"
+  
+  # ImageNet pretrained weights root directory (for loading pretrained model architectures)
+  imagenet_weights_root: "<PATH_TO_IMAGENET_WEIGHTS>"
+  
+  # MedMNIST data root directory
+  medmnist_data_root: "<PATH_TO_MEDMNIST_DATA>"
+  
+  # Pre-computed means directory (reuses results from Attributions_Densenet_MedMNIST)
+  means_dir: "<PATH_TO_PRECOMPUTED_MEANS>"
+  
+  # Base data directory (reuses zarr files from Attributions_Densenet_MedMNIST)
+  base_data_dir: "<PATH_TO_BASE_DATA_DENSENET>"
+  
+  # ResNet18 base data directory
+  base_data_dir_resnet18: "<PATH_TO_BASE_DATA_RESNET>"
+  
+  # Log directory
+  scheduler_log_dir: "./scheduler_logs/"
+  
+  # Final output directory
+  final_output_dir: "<PATH_TO_FINAL_OUTPUT>"
+
+# --- 2. Model and Explanation Method Configuration ---
+# Mapping of 8 models and 8 explanation methods
+model_method_mapping:
+  # Model1 -> Method1, Model2 -> Method2, ... Model8 -> Method8
+  - { model_split_id: 0, method_name: "Saliency" }
+  - { model_split_id: 1, method_name: "InputXGradient" }
+  - { model_split_id: 2, method_name: "GuidedBackprop" }
+  - { model_split_id: 3, method_name: "Deconvolution" }
+  - { model_split_id: 4, method_name: "IntegratedGradients_n_steps_50" }
+  - { model_split_id: 5, method_name: "DeepLIFT" }
+  - { model_split_id: 6, method_name: "GradientShap_n_samples_20" }
+  - { model_split_id: 7, method_name: "DeepLIFT_SHAP" }
+
+# --- 3. Grid Search Space ---
+search_space:
+  # Datasets
+  data_flags: ['bloodmnist', 'dermamnist', 'breastmnist']
+  
+  # Model types
+  model_flags: ['densenet121','resnet18']
+  
+  # Noise conditions
+  noise_conditions:
+    - { name: clean, type: none, params: {} }
+    - { name: gaussian_std_0.15, type: gaussian, params: {std: 0.15} }
+    - { name: salt_pepper_amount_0.05, type: salt_pepper, params: {amount: 0.05} }
+    - { name: speckle_std_0.15, type: speckle, params: {std: 0.15} }
+  
+  # Data splits
+  splits: ['val','train','test']
+
+# --- 4. Pre-flight Check Configuration ---
+preflight_check:
+  enabled: false
+  results_path: "./preflight_results.json"
+  subset_size: 1024
+  start_batch_size: 1024
+  binary_search_depth: 4
+  
+  exempt_methods:
+    FeatureAblation: 2048
+    Occlusion: 2048
+
+# --- 5. Scheduler Configuration ---
+scheduler:
+  available_gpus: [0, 1, 2]
+  max_tasks_per_gpu: 1  # Each GPU can run 1 attribution task
+  max_retries: 2
+  task_timeout: 86400  # 24 hours
+  polling_interval: 10
+
+# --- 6. Experiment Metadata ---
+experiment:
+  name: "attribution_decorr_v1"
+  description: "Generate 8 attribution explanations using 8 decorrelated models, each model corresponds to one explanation method"
+  version: "1.0"
