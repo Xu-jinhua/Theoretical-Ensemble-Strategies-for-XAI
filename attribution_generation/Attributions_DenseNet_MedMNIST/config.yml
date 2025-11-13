@@ -1,0 +1,71 @@
+# --- 1. Path Configuration ---
+paths:
+  # Must point to the root directory where your trained DenseNet weights are saved
+  # (consistent with OUTPUT_WEIGHTS_ROOT in train_medmnist.py)
+  medmnist_weights_root: "<PATH_TO_MEDMNIST_WEIGHTS>"
+
+  # Must point to the root directory containing .npz files
+  medmnist_data_root: "<PATH_TO_MEDMNIST_DATA>"
+
+  # We will create a new means directory for MedMNIST
+  means_dir: "<PATH_TO_PRECOMPUTED_MEANS>"
+  
+  # Log directory (unchanged)
+  scheduler_log_dir: "./scheduler_logs/"
+
+  # Set a new output directory for DenseNet experiments
+  final_output_dir: "<PATH_TO_FINAL_OUTPUT>"
+
+# --- 2. Grid Search Space ---
+search_space:
+  # Set to all available 2D MedMNIST datasets
+  data_flags: []
+  
+  # Set to densenet121
+  model_flags: ['densenet121']
+  
+  # Keep 'val' (as you wish)
+  splits: ['val','train','test']
+
+  # Unchanged
+  noise_conditions:
+    - { name: clean, type: none, params: {} }
+    - { name: gaussian_std_0.15, type: gaussian, params: {std: 0.15} }
+    - { name: salt_pepper_amount_0.05, type: salt_pepper, params: {amount: 0.05} }
+    - { name: speckle_std_0.15, type: speckle, params: {std: 0.15} }
+
+  # Unchanged
+  attribution_methods:
+    - { name: FeatureAblation, class: FeatureAblation, params: { patch_size: [8, 14, 16] } }
+    - { name: Occlusion, class: Occlusion, params: { patch_size: [8, 14, 16], baselines: "global_mean" } }
+    - { name: Saliency, class: Saliency, params: {} }
+    - { name: InputXGradient, class: InputXGradient, params: {} }
+    - { name: GuidedBackprop, class: GuidedBackprop, params: {} }
+    - { name: Deconvolution, class: Deconvolution, params: {} }
+    - { name: IntegratedGradients, class: IntegratedGradients, params: { n_steps: [50, 200], baselines: "zero" } }
+    - { name: DeepLIFT, class: DeepLift, params: { baselines: "global_mean" } }
+    - { name: GradientShap, class: GradientShap, params: { baselines: "combined_zng", n_samples: [20, 40] } }
+    - { name: DeepLIFT_SHAP, class: DeepLiftShap, params: { baselines: "combined_zng" } }
+
+# --- 3. Pre-flight Check Configuration ---
+preflight_check:
+  # Disable pre-flight check (as you wish)
+  enabled: false
+  
+  # Ensure this points to the MedMNIST JSON file you modified in step 1
+  results_path: "./preflight_results_from_MedMNIST.json"
+  
+  subset_size: 1024
+  start_batch_size: 1024
+  binary_search_depth: 4
+  
+  exempt_methods:
+    FeatureAblation: 2048
+    Occlusion: 2048
+
+# --- 4. Scheduler Configuration ---
+scheduler:
+  available_gpus: [0, 1, 2] #
+  max_retries: 2
+  task_timeout: 2880000 # Unchanged (800 hours)
+  polling_interval: 10
