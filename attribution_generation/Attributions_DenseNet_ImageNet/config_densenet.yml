@@ -1,0 +1,62 @@
+# =========================================================================
+# DenseNet Attribution Generation Configuration
+# =========================================================================
+
+# --- 1. Path Configuration ---
+paths:
+  # Input: The Zarr file we created for ImageNet
+  input_zarr_path: "<PATH_TO_INPUT_ZARR>"
+
+  # Output: New directory to store .pt files
+  output_root_dir: "<PATH_TO_OUTPUT_DIR>"
+
+  # Local path for ImageNet pretrained weights (used by model_loader_densenet.py)
+  imagenet_weights_root: "<PATH_TO_IMAGENET_WEIGHTS>"
+
+
+# --- 2. Runtime Settings ---
+settings:
+  # Model to use
+  model_flag: "densenet121"
+  
+  # GPU to use for execution
+  gpu_id: 0
+  
+  # Batch size settings (replaces preflight_results.json)
+  batch_sizes:
+    # Default batch size
+    default: 128
+    
+    # Set specific small batch sizes for methods known to have high memory consumption
+    IntegratedGradients_baselines_zero_n_steps_50: 8
+    IntegratedGradients_baselines_zero_n_steps_200: 2
+    DeepLIFT_baselines_global_mean: 128
+    GradientShap_baselines_combined_zng_n_samples_20: 16
+    GradientShap_baselines_combined_zng_n_samples_40: 8
+    DeepLIFT_SHAP_baselines_combined_zng: 2
+    # FeatureAblation and Occlusion are also typically slow, but can use larger batch sizes
+    FeatureAblation: 256
+    Occlusion: 256
+
+
+# --- 3. Noise Search Space (copied from config.yml) ---
+#
+noise_conditions:
+  - { name: clean, type: none, params: {} }
+  - { name: gaussian_std_0.15, type: gaussian, params: {std: 0.15} }
+  - { name: salt_pepper_amount_0.05, type: salt_pepper, params: {amount: 0.05} }
+  - { name: speckle_std_0.15, type: speckle, params: {std: 0.15} }
+
+# --- 4. Attribution Method Search Space (copied from config.yml) ---
+#
+attribution_methods:
+  - { name: FeatureAblation, class: FeatureAblation, params: { patch_size: [8, 14, 16] } } 
+  - { name: Occlusion, class: Occlusion, params: { patch_size: [8, 14, 16], baselines: "global_mean" } } 
+  - { name: Saliency, class: Saliency, params: {} }
+  - { name: InputXGradient, class: InputXGradient, params: {} }
+  - { name: GuidedBackprop, class: GuidedBackprop, params: {} }
+  - { name: Deconvolution, class: Deconvolution, params: {} }
+  - { name: IntegratedGradients, class: IntegratedGradients, params: { n_steps: [50, 200], baselines: "zero" } }
+  - { name: DeepLIFT, class: DeepLift, params: { baselines: "global_mean" } }
+  - { name: GradientShap, class: GradientShap, params: { baselines: "combined_zng", n_samples: [20, 40] } }
+  - { name: DeepLIFT_SHAP, class: DeepLiftShap, params: { baselines: "combined_zng" } }
