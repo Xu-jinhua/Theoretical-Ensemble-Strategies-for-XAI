@@ -1,5 +1,4 @@
 import os
-# 在文件开头添加以下代码，用来解决MKL相关的线程冲突问题
 os.environ['MKL_THREADING_LAYER'] = 'GNU'
 os.environ['MKL_SERVICE_FORCE_INTEL'] = '1'
 
@@ -217,13 +216,10 @@ class TaskScheduler:
             sys.exit(1)
 
     def _get_data_flags(self) -> List[str]:
-        # This logic is for MedMNIST auto-discovery and is not used for the ImageNet setup.
-        # It's kept for potential future reusability.
         flags = self.config['search_space'].get('data_flags', [])
-        if 'imagenet' in flags: # For our current setup, this will always be true
+        if 'imagenet' in flags:
             return flags
             
-        # Fallback logic for MedMNIST
         if not flags:
             weights_root = Path(self.paths['medmnist_weights_root'])
             if not weights_root.exists():
