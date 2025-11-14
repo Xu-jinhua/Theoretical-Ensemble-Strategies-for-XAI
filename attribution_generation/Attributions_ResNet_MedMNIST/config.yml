@@ -1,0 +1,62 @@
+# --- 1. Path Configuration ---
+paths:
+  # Root directory for MedMNIST official weights.
+  medmnist_weights_root: "<PATH_TO_MEDMNIST_WEIGHTS>"
+
+  # Directory to cache MedMNIST datasets.
+  medmnist_data_root: "<PATH_TO_MEDMNIST_DATA>"
+
+  # Directory to store pre-calculated mean images for baselines.
+  means_dir: "<PATH_TO_PRECOMPUTED_MEANS>"
+  
+  # Directory for scheduler logs
+  scheduler_log_dir: "./scheduler_logs/"
+
+  # Final destination for the consolidated Zarr stores on the mounted Google Drive.
+  final_output_dir: "<PATH_TO_FINAL_OUTPUT>"
+
+# --- 2. Grid Search Space ---
+search_space:
+  # Leave empty `[]` to automatically scan all available 2D datasets.
+  data_flags: []
+  model_flags: ['resnet18', 'resnet50']
+  splits: ['train', 'val', 'test']
+
+  noise_conditions:
+    - { name: clean, type: none, params: {} }
+    - { name: gaussian_std_0.15, type: gaussian, params: {std: 0.15} }
+    - { name: salt_pepper_amount_0.05, type: salt_pepper, params: {amount: 0.05} }
+    - { name: speckle_std_0.15, type: speckle, params: {std: 0.15} }
+
+  attribution_methods:
+    # --- Computationally expensive methods are moved to the top for priority execution ---
+    - { name: FeatureAblation, class: FeatureAblation, params: { patch_size: [8, 14, 16] } }
+    - { name: Occlusion, class: Occlusion, params: { patch_size: [8, 14, 16], baselines: "global_mean" } }
+    # --- Less expensive methods follow ---
+    - { name: Saliency, class: Saliency, params: {} }
+    - { name: InputXGradient, class: InputXGradient, params: {} }
+    - { name: GuidedBackprop, class: GuidedBackprop, params: {} }
+    - { name: Deconvolution, class: Deconvolution, params: {} }
+    - { name: IntegratedGradients, class: IntegratedGradients, params: { n_steps: [50, 200], baselines: "zero" } }
+    - { name: DeepLIFT, class: DeepLift, params: { baselines: "global_mean" } }
+    - { name: GradientShap, class: GradientShap, params: { baselines: "combined_zng", n_samples: [20, 40] } }
+    - { name: DeepLIFT_SHAP, class: DeepLiftShap, params: { baselines: "combined_zng" } }
+
+# --- 3. Pre-flight Check Configuration ---
+preflight_check:
+  enabled: true
+  results_path: "./preflight_results.json"
+  subset_size: 512
+  start_batch_size: 512
+  binary_search_depth: 4
+  
+  exempt_methods:
+    FeatureAblation: 1024
+    Occlusion: 1024
+
+# --- 4. Scheduler Configuration ---
+scheduler:
+  available_gpus: [1]
+  max_retries: 1
+  task_timeout: 288000 # 80 hours
+  polling_interval: 10

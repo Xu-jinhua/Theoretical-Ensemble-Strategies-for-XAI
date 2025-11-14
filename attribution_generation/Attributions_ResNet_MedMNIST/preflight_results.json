@@ -1,0 +1,38 @@
+{
+    "resnet18": {
+        "FeatureAblation_patch_size_8": 1024,
+        "FeatureAblation_patch_size_14": 1024,
+        "FeatureAblation_patch_size_16": 1024,
+        "Occlusion_baselines_global_mean_patch_size_8": 1024,
+        "Occlusion_baselines_global_mean_patch_size_14": 1024,
+        "Occlusion_baselines_global_mean_patch_size_16": 1024,
+        "Saliency": 496,
+        "InputXGradient": 496,
+        "GuidedBackprop": 496,
+        "Deconvolution": 496,
+        "IntegratedGradients_baselines_zero_n_steps_50": 24,
+        "IntegratedGradients_baselines_zero_n_steps_200": 8,
+        "DeepLIFT_baselines_global_mean": 256,
+        "GradientShap_baselines_combined_zng_n_samples_20": 45,
+        "GradientShap_baselines_combined_zng_n_samples_40": 21,
+        "DeepLIFT_SHAP_baselines_combined_zng": 6
+    },
+    "resnet50": {
+        "FeatureAblation_patch_size_8": 1024,
+        "FeatureAblation_patch_size_14": 1024,
+        "FeatureAblation_patch_size_16": 1024,
+        "Occlusion_baselines_global_mean_patch_size_8": 1024,
+        "Occlusion_baselines_global_mean_patch_size_14": 1024,
+        "Occlusion_baselines_global_mean_patch_size_16": 1024,
+        "Saliency": 256,
+        "InputXGradient": 256,
+        "GuidedBackprop": 256,
+        "Deconvolution": 256,
+        "IntegratedGradients_baselines_zero_n_steps_50": 8,
+        "IntegratedGradients_baselines_zero_n_steps_200": 2,
+        "DeepLIFT_baselines_global_mean": 99,
+        "GradientShap_baselines_combined_zng_n_samples_20": 18,
+        "GradientShap_baselines_combined_zng_n_samples_40": 9,
+        "DeepLIFT_SHAP_baselines_combined_zng": 3
+    }
+}
