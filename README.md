@@ -33,4 +33,4 @@ The `attribution_generation/` folder contains all scripts required to generate t
 
 The generation process is highly configurable and managed by `scheduler.py` scripts. For a complete, step-by-step guide on configuring paths, running pre-flight checks, and generating the final Zarr/PT files, please refer to the detailed README within that folder:
 
-** [Full Instructions: `attribution_generation/README.md`](./attribution_generation/README.md)**
+* [Full Instructions: `attribution_generation/README.md`](./attribution_generation/README.md)
