@@ -1,0 +1,92 @@
+# =========================================================================
+# Decorrelated Rank-Based Analysis Framework Configuration
+# =========================================================================
+
+# The name of this experiment run, used for the output folder.
+experiment_name: Decorrelated_Ensemble_Comparison
+
+# --- Data Source Configuration ---
+data_source:
+  # Path to the decorrelated Zarr attributions
+  path: "<PATH_TO_ZARR_ATTRIBUTIONS>"
+  # The loader uses this pattern to find relevant files
+  naming_pattern: "dataset-{dataset}_model-{model}_noise-{noise}_split-{split}_decorr*"
+
+# --- Temporary Directory for Extraction ---
+temp_extraction_dir: "<PATH_TO_TEMP_EXTRACTION_DIR>"
+
+# --- Experiment Matrix (Outer Loop for Scheduler) ---
+# Defines all the combinations of tasks to be scheduled.
+experiments:
+  - dataset: ["bloodmnist", "breastmnist", "dermamnist"]
+    model: ["densenet121", "resnet18"]
+    split: ["val"]
+    noise: ["clean", "gaussian_std_0.15", "salt_pepper_amount_0.05", "speckle_std_0.15"]
+
+# --- Analysis Parameters (Inner Loop for Worker) ---
+analysis_params:
+  # The batch size for processing evaluations. Lower this if you encounter memory issues.
+  batch_size: 64
+  # List of patch sizes to iterate over for patch-based evaluations.
+  patch_size: [8, 14, 16]
+  
+  # The number of base attribution methods to select for ensembling.
+  ensemble_n_range: [2, 3, 4, 5, 6, 7, 8, 9, 10]
+
+  # The k values for the masking game evaluation.
+  # Use the same k values as the original experiments
+  top_k_values: [0, 1, 2, 3, 4, 5, 10, 15, 20, 25, 30, 35, 40, 45, 50, 55, 60]
+  
+  # --- List of method names to run with DYNAMIC logic ---
+  # Methods *not* in this list will use the default STATIC logic.
+  dynamic_ensemble_methods: ["Borda", "Kemeny-Young", "RRF", "Schulze", "norm_ensemble"]
+  
+  # --- Unified Ensemble Methods ---
+  # Both rank-based and norm-based ensembles are defined here.
+  ensemble_methods:
+    # Rank-based methods
+    - name: "Borda"
+    - name: "RRF"
+      params: { "k": 60 } # k is the constant used in the RRF formula
+    - name: "Schulze"
+    - name: "Kemeny-Young"
+    
+    # Norm-based methods (MODIFIED: Only 'mean' aggregation)
+    - name: "norm_ensemble"
+      params: { "normalization": "normal", "aggregation": "mean" }
+    - name: "norm_ensemble"
+      params: { "normalization": "robust", "aggregation": "mean" }
+    - name: "norm_ensemble"
+      params: { "normalization": "scaling", "aggregation": "mean" }
+
+  # --- Evaluation Methods ---
+  # Defines how the performance of each ensemble is measured.
+  evaluation_methods:
+    - name: "masking_game"
+      params: { "replace_top": true, "fill_type": "class_mean" }
+    - name: "masking_game"
+      params: { "replace_top": true, "fill_type": "global_mean" }
+    - name: "masking_game"
+      params: { "replace_top": false, "fill_type": "class_mean" }
+    - name: "masking_game"
+      params: { "replace_top": false, "fill_type": "global_mean" }
+
+# --- Global Settings ---
+# Path to the root of pre-trained models directory.
+weights_root: "<PATH_TO_PRETRAINED_MODELS>"
+
+# --- MODIFICATION: Set new output and specify old source ---
+# Directory for experiment outputs (NEW location)
+output_dir: "<PATH_TO_OUTPUT_DIR>"
+
+# Directory to read existing/source results from (OLD location)
+# worker.py will read from here and save to output_dir
+source_results_dir: "<PATH_TO_SOURCE_RESULTS>"
+# --- END MODIFICATION ---
+
+# --- Scheduler Configuration ---
+scheduler:
+  available_gpus: [0, 1, 2]
+  max_retries: 1
+  task_timeout: 144000 # 40 hours
+  polling_interval: 10
