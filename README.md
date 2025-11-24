@@ -40,4 +40,25 @@ The generation process is highly configurable and managed by `scheduler.py` scri
 
 * [Full Instructions: `attribution_generation/README.md`](./attribution_generation/README.md)
 
+## Experiments (`experiments/`)
+
+We organize our experiments into two main parts, corresponding to the structure of the manuscript.
+
+For detailed configuration and running instructions, please refer to the documentation within the folder:
+**[`experiments/README.md`](./experiments/README.md)**
+
+### 1. EXP1: Validation of the Independence Hypothesis
+* **Objective:** To empirically investigate whether enforcing statistical independence between explanations (via data splitting) yields performance gains compared to standard ensembling.
+* **Comparison:**
+  * **Standard Ensemble:** Explanations generated from models trained on the full dataset.
+   * **Independence Setting:** Explanations generated from models trained on disjoint data subsets.
+* **Key Finding:** The violation of the independence assumption in practice does not lead to a meaningful degradation in performance.
+
+### 2. EXP2: Impact of Noise Model Alignment
+* **Objective:** To evaluate the performance of voting-based ensemble strategies when the underlying theoretical assumptions are satisfied versus a naive application.
+* **Comparison:**
+    * **Naive Approach:** Aggregates all available explanations directly.
+    * **Theory-Guided Approach (Ours):** Filters and aggregates only the explanations that satisfy the underlying noise model assumption.
+* **Metrics:** Fidelity ($\mathcal{F}$), Consistency ($\mathcal{C}$), and Robustness ($\mathcal{R}$).
+
 
